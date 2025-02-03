@@ -8,6 +8,7 @@ dependencies = [
     "black>=24.10.0",
     "ipython>=8.31.0",
     "isort>=5.13.2",
+    "langchain-community>=0.3.13",
     "langchain>=0.3.13",
     "langchain-ollama>=0.2.2",
     "langchainhub>=0.1.21",
@@ -15,4 +16,8 @@ dependencies = [
     "python-dotenv>=1.0.1",
     "requests==2.27.1",
     "ruff>=0.8.4",
+    "wikipedia>=1.4.0",
+    "langgraph>=0.2.60",
+    "tavily-python>=0.5.0",
+    "streamlit>=1.41.1",
 ]
