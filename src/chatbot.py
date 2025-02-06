@@ -7,6 +7,7 @@ from langchain_core.tools import Tool
 from utils.tools import (
     search_wikipedia_summary,
     get_tavily_formatted_response,
+    get_google_search_results,
 )
 import warnings
 warnings.filterwarnings("ignore")
@@ -43,6 +44,11 @@ tools_for_agent = [
         func=get_tavily_formatted_response,
         description="Needed to search information from the web, useful for real time information",
     ),
+    Tool(
+        name="Google search",
+        func=get_google_search_results,
+        description="Needed to search information from Google, useful for real time information",
+    ),
 ]
 llm_with_tools = llm.bind_tools(tools_for_agent)
 
@@ -71,6 +77,7 @@ graph_builder.add_conditional_edges(
 )
 # Any time a tool is called, we return to the chatbot to decide the next step
 graph_builder.add_edge("tools", "chatbot")
+# The entry point is the chatbot (i.e., chosen LLM)
 graph_builder.add_edge(START, "chatbot")
 
 memory = MemorySaver()

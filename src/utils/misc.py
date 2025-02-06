@@ -78,9 +78,7 @@ class State(TypedDict):
     # in the annotation defines how this state key should be updated
     # (in this case, it appends messages to the list, rather than overwriting them)
     messages: Annotated[list, add_messages]
-    
-def chatbot(state: State, llm):
-    return {"messages": [llm.invoke(state["messages"])]}
+
 
 def route_tools(
     state: State,
@@ -99,23 +97,10 @@ def route_tools(
         return "tools"
     return END
 
-#def chatbot(state: State, llm) -> dict:
-#    system_prompt = """
-#    You are an AI assistant.
-#    Answer the following questions as best you can.
-#    You have access to tools, call them only if necessary.
-#    
-#    Use the following format:
-#
-#    Question: the input question you must answer
-#    Thought: you should always think about what to do
-#    Action: the action to take
-#    Action Input: the input to the action
-#    Observation: the result of the action
-#    ... (this Thought/Action/Action Input/Observation can repeat N times)
-#    Thought: whether you know the final answer or not
-#    Final Answer: the final answer to the original input question
-#
-#    Begin!
-#    """
-#    return {"messages": [llm.invoke([system_prompt] + state["messages"])]}
+def chatbot(state: State, llm) -> dict:
+    system_prompt = """
+    You are an AI assistant.
+    Answer the following questions as best you can.
+    You have access to tools, call them only if necessary.
+    """
+    return {"messages": [llm.invoke([system_prompt] + state["messages"])]}

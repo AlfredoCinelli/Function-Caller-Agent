@@ -1,128 +1,71 @@
+"""Module building the frontend of the Chatbot assistant via Streamlit."""
+
 import streamlit as st
-from langgraph.graph import StateGraph, START, END
-from langchain_core.tools import Tool
-from src.utils.tools import search_wikipedia_summary, get_tavily_formatted_response
-from langchain_ollama import ChatOllama
-from langgraph.checkpoint.memory import MemorySaver
-from functools import partial
-from src.utils.misc import BasicToolNode, State, route_tools, chatbot
-import time
 
-def initialize_session_state():
-    """Initialize session state variables."""
-    if 'messages' not in st.session_state:
-        st.session_state.messages = []
-    if 'graph' not in st.session_state:
-        st.session_state.graph = create_graph()
+from src.backend import Graph
+from src.utils.logging import logger
+from langchain_core.messages import AIMessage
+import warnings
+warnings.filterwarnings("ignore")
 
-def create_graph():
-    """Create and return the LangGraph chatbot graph."""
-    graph_builder = StateGraph(State)
-    
-    # Initialize LLM
-    llm = ChatOllama(
-        model="mistral-nemo", # qwen2.5
-        temperature=0,
-    )
-    
-    # Define tools
-    tools_for_agent = [
-        Tool(
-            name="Wikipedia fetcher",
-            func=search_wikipedia_summary,
-            description="Needed to fetch information from Wikipedia, useful for non real time information",
-        ),
-        Tool(
-            name="Tavily search",
-            func=get_tavily_formatted_response,
-            description="Needed to search information from the web, useful for real time information",
-        ),
-    ]
-    
-    llm_with_tools = llm.bind_tools(tools_for_agent)
-    
-    # Add nodes
-    graph_builder.add_node("chatbot", partial(chatbot, llm=llm_with_tools))
-    tool_node = BasicToolNode(tools=tools_for_agent)
-    graph_builder.add_node("tools", tool_node)
-    
-    # Add edges
-    graph_builder.add_conditional_edges(
-        "chatbot",
-        route_tools,
-        {"tools": "tools", END: END},
-    )
-    graph_builder.add_edge("tools", "chatbot")
-    graph_builder.add_edge(START, "chatbot")
-    
-    # Compile graph
-    memory = MemorySaver()
-    return graph_builder.compile(checkpointer=memory)
+# Page config
+st.set_page_config(page_title="Agent", layout="wide")
 
-def display_messages():
-    """Display chat messages."""
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.write(message["content"])
+# Initialize session state for conversation history
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-def process_user_message(user_input):
-    """Process user input and get bot response."""
-    # Add user message to chat history
-    st.session_state.messages.append({"role": "user", "content": user_input})
+if "graph" not in st.session_state:
+
+    st.session_state.graph = Graph(model_name="qwen2.5").compile_graph()
+
+# Display chat title
+st.title("🤖 AI Assistant")
+st.markdown("---")
+
+# Display chat history
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+# Chat input
+if prompt := st.chat_input("What would you like to know?"):
+    # Display user message
+    with st.chat_message("user", avatar="🧑‍💻"):
+        st.markdown(prompt)
+    st.session_state.messages.append({"role": "user", "content": prompt})
     
-    # Get bot response
-    config = {"configurable": {"thread_id": "1"}}
-    events = st.session_state.graph.stream(
-        {"messages": [("user", user_input)]}, 
-        config, 
-        stream_mode="values"
-    )
-    
-    # Process and display bot response
-    for event in events:
-        response = event["messages"][-1].content
-        st.session_state.messages.append({"role": "assistant", "content": response})
-        
-        # Display thinking animation
-        with st.chat_message("assistant"):
+    # Get assistant response
+    with st.spinner("🗣️ Calling Agent to get answer..."):
+        with st.chat_message("assistant", avatar="🤖"):
             message_placeholder = st.empty()
-            for i in range(len(response)):
-                message_placeholder.markdown(response[:i+1] + "▌")
-                time.sleep(0.01)
-            message_placeholder.markdown(response)
+            full_response = ""
 
-def main():
-    # Page config
-    st.set_page_config(
-        page_title="AI Assistant",
-        page_icon="🤖",
-        layout="centered"
-    )
-    
-    # Header
-    st.header("🤖 AI Assistant")
-    st.markdown("""
-    This AI assistant can help you with various tasks including:
-    - Searching Wikipedia
-    - Finding real-time information
-    - Answering questions and having conversations
-    """)
-    
-    # Initialize session state
-    initialize_session_state()
-    
-    # Display chat messages
-    display_messages()
-    
-    # Chat input
-    if user_input := st.chat_input("Type your message here..."):
-        try:
-            process_user_message(user_input)
-        except Exception as e:
-            st.error(f"An error occurred: {str(e)}")
-            if st.button("Reset Chat"):
-                st.session_state.messages = []
-                st.rerun()
+            try:
+                config = {"configurable": {"thread_id": "1"}}
+                events = st.session_state.graph.stream(
+                    {"messages": [("user", prompt)]},
+                    config,
+                    stream_mode="values"
+                )
 
-if __name__ == "__main__":
-    main()
+                # Process streamed response
+                for event in events:
+                    response = event.get("messages")[-1]
+                    if isinstance(response, AIMessage):
+                        message_placeholder.markdown(response.content + "▌")
+
+                st.session_state.messages.append({"role": "assistant", "content": response.content})
+
+            except Exception as exc:
+                st.error(f"An error occurred: {str(exc)}")
+
+
+with st.sidebar:
+    with st.expander("⚙️ Tools"):
+        st.caption("- Wikipedia Search: tool allowing to search for information on Wikipedia.")
+        st.caption("- Tavily Web Search: tool allowing to search for information on the web.")
+        st.caption("- Google Search: tool allowing to search for information on Google.")
+    if st.sidebar.button("Clear Chat", help="Remove the chat history made so far!"):
+        st.session_state.messages = []
+        st.rerun()
