@@ -1,6 +1,6 @@
 # 🔍🤖 WebExplorer Agent
 
-An intelligent agent that searches and synthesizes information from the web using Tavily Search API and Wikipedia, presented through a sleek Streamlit interface.
+An intelligent agent that searches and synthesizes information from the web using Tavily Search API, Google Serper and Wikipedia, presented through a sleek Streamlit interface.
 
 ![Python Version](https://img.shields.io/badge/python-3.12-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -8,17 +8,19 @@ An intelligent agent that searches and synthesizes information from the web usin
 
 ## ✨ Features
 
-- **Dual Search Capabilities**: Leverage both Tavily's AI-powered search and Wikipedia's vast knowledge base
+- **Dual Search Capabilities**: Leverage both Tavily's AI-powered (and Google Serper) search and Wikipedia's vast knowledge base
 - **Smart Results Synthesis**: Combines and summarizes information from multiple sources
 - **Interactive UI**: Built with Streamlit for a seamless user experience
 - **Context-Aware Responses**: Maintains conversation history for more relevant follow-ups
+- **Full logging**: Keeps a record of all interactions for debugging and analysis
+- **Full tracing**: Logs every interaction, including the user's query, the agent's response, and the sources used via [LangSmith](https://www.smith.langchain.com)
 - **Easy Settingup**: Use [uv](https://docs.astral.sh/uv/) to  set up the project environment
 
 ## 🚀 Quick Start
 
 1. Clone the repository:
 ```bash
-git clone repo/url
+git clone https://github.com/AlfredoCinelli/ReAct-Agent
 cd repo_name
 ```
 
@@ -40,7 +42,7 @@ make app
 repo/
 ├── app.py # Streamlit application entry src
 ├── utils/
-│   ├── callbacks.py      # Module for callbacks
+│   ├── callbacks.py # Module for callbacks
 │   ├── logging.py   # Module for logging
 │   └── misc.py # Module with helper functions
 │   ├── tools.py   # Module with tools
@@ -54,7 +56,7 @@ Configure the agent through `local/.env` file:
 
 ```yaml
 TAVILY_API_KEY="your_tavily_api_key"
-SERPAPI_API_KEY="your_serpapi_api_key"
+SERPER_API_KEY="your_serpapi_api_key"
 LANGCHAIN_TRACING_V2=true
 LANGCHAIN_ENDPOINT="https://api.smith.langchain.com"
 LANGCHAIN_API_KEY="your_langchain_api_key"
@@ -78,14 +80,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - [Tavily API](https://tavily.com) for powerful search capabilities
-- [Wikipedia API](https://www.mediawiki.org/wiki/API:Main_page) for knowledge base access
+- [Serper API](https://serper.dev) for advanced search capabilities
+- [Wikipedia API](https://pypi.org/project/wikipedia/) for knowledge base access
 - [Streamlit](https://streamlit.io) for the amazing UI framework
 
 ## 📞 Support
 
-- 📧 Email: support@webexplorer.com
-- 💬 Discord: [Join our community](https://discord.gg/webexplorer)
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/webexplorer-agent/issues)
+- 📧 Email: alfredocinelli@gmail.com
+- 🐛 Issues: [GitHub Issues](https://github.com/AlfredoCinelli/ReAct-Agent/issues)
 
 ---
-Made with ❤️ by [Your Name/Organization]
+Made with ❤️ by [Alfredo Cinelli](https://github.com/alfredocinelli)
