@@ -14,4 +14,8 @@ wheels/
 
 # Local configuration files
 local/*
-!local/.gitkeeps
+!local/.gitkeep
+
+# Other files and folders
+logs/*
+!logs/.gitkeep

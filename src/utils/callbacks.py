@@ -7,6 +7,8 @@ from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import LLMResult
 from typing_extensions import Self
 
+from src.utils.logging import logger
+
 
 # Define classes
 class LLMCallbackHandler(BaseCallbackHandler):
@@ -32,11 +34,9 @@ class LLMCallbackHandler(BaseCallbackHandler):
         :return: print the LLM call and the prompt
         :rtype: None
         """
-        print("*" * 15)
-        print(
+        logger.info(
             f"LLM starts running.\nIts prompt was:\n{prompts[0]}"
         )  # there only one prompt at this stage
-        print("*" * 15)
 
     def on_llm_end(  # type: ignore
         self: Self,
@@ -53,7 +53,6 @@ class LLMCallbackHandler(BaseCallbackHandler):
         :return: print the LLM response
         :rtype: None
         """
-        print(
+        logger.info(
             f"LLM ends running.\nIts response was:\n{response.generations[0][0].text}"
         )
-        print("*" * 15)
