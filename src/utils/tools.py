@@ -1,13 +1,14 @@
 """Module aimed at defining the tools to be used by the agents."""
 
 # Import packages and modules
-from tavily import TavilyClient
+import os
+
+from dotenv import load_dotenv
 from langchain.agents import tool
 from langchain_community.document_loaders.wikipedia import WikipediaLoader
-from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.utilities import GoogleSerperAPIWrapper
-from dotenv import load_dotenv
-import os
+from tavily import TavilyClient
+
 from src.utils.logging import logger
 
 load_dotenv("local/.env")
@@ -33,11 +34,11 @@ def search_wikipedia_summary(
         load_max_docs=3,
         doc_content_chars_max=2_000,
     ).load()
-    
-    wikipedia_summary = "\n\n".join([
-        doc.metadata.get("summary", "") for doc in wikipedia_res
-    ])
-    
+
+    wikipedia_summary = "\n\n".join(
+        [doc.metadata.get("summary", "") for doc in wikipedia_res]
+    )
+
     return wikipedia_summary
 
 
@@ -55,8 +56,9 @@ def get_tavily_formatted_response(
     """
     logger.info("Calling Tavily search tool.")
     tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
-    
+
     return tavily_client.qna_search(query=query)
+
 
 @tool(parse_docstring=False)
 def get_google_search_results(
@@ -74,4 +76,3 @@ def get_google_search_results(
     google_search = GoogleSerperAPIWrapper()
 
     return google_search.run(query)
-    

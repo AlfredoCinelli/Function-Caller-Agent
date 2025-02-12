@@ -1,11 +1,12 @@
 """Module building the frontend of the Chatbot assistant via Streamlit."""
 
+import warnings
+
 import streamlit as st
+from langchain_core.messages import AIMessage
 
 from src.backend import Graph
-from src.utils.logging import logger
-from langchain_core.messages import AIMessage
-import warnings
+
 warnings.filterwarnings("ignore")
 
 # Page config
@@ -34,7 +35,7 @@ if prompt := st.chat_input("What would you like to know?"):
     with st.chat_message("user", avatar="🧑‍💻"):
         st.markdown(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
-    
+
     # Get assistant response
     with st.spinner("🗣️ Calling Agent to get answer..."):
         with st.chat_message("assistant", avatar="🤖"):
@@ -44,9 +45,7 @@ if prompt := st.chat_input("What would you like to know?"):
             try:
                 config = {"configurable": {"thread_id": "1"}}
                 events = st.session_state.graph.stream(
-                    {"messages": [("user", prompt)]},
-                    config,
-                    stream_mode="values"
+                    {"messages": [("user", prompt)]}, config, stream_mode="values"
                 )
 
                 # Process streamed response
@@ -55,7 +54,9 @@ if prompt := st.chat_input("What would you like to know?"):
                     if isinstance(response, AIMessage):
                         message_placeholder.markdown(response.content + "▌")
 
-                st.session_state.messages.append({"role": "assistant", "content": response.content})
+                st.session_state.messages.append(
+                    {"role": "assistant", "content": response.content}
+                )
 
             except Exception as exc:
                 st.error(f"An error occurred: {str(exc)}")
@@ -63,9 +64,15 @@ if prompt := st.chat_input("What would you like to know?"):
 
 with st.sidebar:
     with st.expander("⚙️ Tools"):
-        st.caption("- Wikipedia Search: tool allowing to search for information on Wikipedia.")
-        st.caption("- Tavily Web Search: tool allowing to search for information on the web.")
-        st.caption("- Google Search: tool allowing to search for information on Google.")
+        st.caption(
+            "- Wikipedia Search: tool allowing to search for information on Wikipedia."
+        )
+        st.caption(
+            "- Tavily Web Search: tool allowing to search for information on the web."
+        )
+        st.caption(
+            "- Google Search: tool allowing to search for information on Google."
+        )
     if st.sidebar.button("Clear Chat", help="Remove the chat history made so far!"):
         st.session_state.messages = []
         st.rerun()

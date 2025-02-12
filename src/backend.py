@@ -2,32 +2,33 @@
 
 # Import packages and modules
 
-from langgraph.graph import StateGraph, START, END
-from langchain_core.tools import Tool
-from src.utils.tools import (
-    search_wikipedia_summary,
-    get_tavily_formatted_response,
-    get_google_search_results,
-)
 import warnings
-warnings.filterwarnings("ignore")
+from functools import partial
+from typing import Union
+
+import streamlit as st
+from dotenv import load_dotenv
+from langchain_core.tools import Tool
 from langchain_ollama import ChatOllama
 from langgraph.checkpoint.memory import MemorySaver
-from functools import partial
-
-from dotenv import load_dotenv
-from src.utils.misc import (
-    BasicToolNode, # equivalent to ToolNode from langgraph.prebuilt
-    State,
-    route_tools, # equivalent to tools_condition from langgraph.prebuilt
-    chatbot,
-)
-import streamlit as st
-from typing_extensions import Self
+from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
-from typing import Union
-from src.utils.callbacks import LLMCallbackHandler
+from typing_extensions import Self
 
+from src.utils.callbacks import LLMCallbackHandler
+from src.utils.misc import (  # equivalent to ToolNode from langgraph.prebuilt; equivalent to tools_condition from langgraph.prebuilt
+    BasicToolNode,
+    State,
+    chatbot,
+    route_tools,
+)
+from src.utils.tools import (
+    get_google_search_results,
+    get_tavily_formatted_response,
+    search_wikipedia_summary,
+)
+
+warnings.filterwarnings("ignore")
 load_dotenv("local/.env")
 
 TOOLS = [
@@ -48,27 +49,30 @@ TOOLS = [
     },
 ]
 
+
 class LLM:
     """Class representing the LLM enginge."""
+
     def __init__(
         self: Self,
         model_name: str,
     ) -> None:
         """Constructor of the LLM model class.
-        
+
         :param model_name: name of the model
-        :type model_name: str        
+        :type model_name: str
         """
-        
+
         self.model_name = model_name
         self.llm = self.get_model(model_name=self.model_name)
-        
+
     st.cache_resource(show_spinner=False)
+
     @staticmethod
     def get_model(
         model_name: str,
     ) -> ChatOllama:
-        """Get the LLM model.
+        """Get the LLM model (from Ollama).
 
         :param model_name: name of the model
         :type model_name: str
@@ -80,11 +84,11 @@ class LLM:
             temperature=0,
             callbacks=[LLMCallbackHandler()],
         )
-    
+
 
 class Graph:
     """Class representing the graph with tools and LLM."""
-    
+
     def __init__(
         self: Self,
         model_name: str,
@@ -102,7 +106,7 @@ class Graph:
         self.llm = LLM(model_name=self.model_name).llm
         self.tools = tools
         self.graph_builder = StateGraph(State)
-        
+
     def get_tools(
         self: Self,
     ) -> list[Tool]:
@@ -112,7 +116,7 @@ class Graph:
         :return: LLM binded with tools
         :rtype: list[Tool]
         """
-        
+
         return [
             Tool(
                 name=tool.get("name"),
@@ -122,13 +126,12 @@ class Graph:
             for tool in self.tools
         ]
 
-    
     def compile_graph(
         self: Self,
     ) -> CompiledStateGraph:
         """
         Method to compile the graph.
-        
+
         :return: compiled LangGraph graph
         :rtype: CompiledStateGraph
         """
@@ -136,16 +139,17 @@ class Graph:
         # Bind LLM with tools
         tools_for_agent = self.get_tools()
         llm_with_tools = self.llm.bind_tools(tools_for_agent)
-        
+
         self.graph_builder.add_node(
-            "chatbot", # unique name of the node
-            partial(chatbot, llm=llm_with_tools), # object called when the node is invoked
+            "chatbot",  # unique name of the node
+            partial(
+                chatbot, llm=llm_with_tools
+            ),  # object called when the node is invoked
         )
 
         # Add the tool node
         tool_node = BasicToolNode(tools=tools_for_agent)
         self.graph_builder.add_node("tools", tool_node)
-
 
         # The `tools_condition` function returns "tools" if the chatbot asks to use a tool, and "END" if
         # it is fine directly responding. This conditional routing defines the main agent loop.

@@ -6,6 +6,7 @@ from typing import Any
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.schema import LLMResult
 from typing_extensions import Self
+
 from src.utils.logging import logger
 
 

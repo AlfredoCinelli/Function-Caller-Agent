@@ -1,18 +1,17 @@
 """Module aimed at creating miscellaneous functions."""
 
 # Import  packages and modules
-from typing import Union
+import json
+from typing import Annotated, Union
 
 from langchain.agents.output_parsers import ReActSingleInputOutputParser
 from langchain.schema import AgentAction, AgentFinish
 from langchain.tools import Tool
-from langchain_core.documents import Document
-import json
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import ToolMessage
-from langgraph.graph.message import add_messages
-from typing_extensions import TypedDict
-from typing import Annotated
 from langgraph.graph import END
+from langgraph.graph.message import add_messages
+from typing_extensions import Self, TypedDict
 
 # Define functions
 
@@ -21,6 +20,17 @@ def find_tool_by_name(
     tools: list[Tool],
     tool_name: str,
 ) -> Tool:
+    """
+    Function to find a tool given the list of tools and the name of the tool.
+
+    :param tools: list of tools
+    :type tools: list[Tool]
+    :param tool_name: name of the tool to be searched for
+    :type tool_name: str
+    :raises ValueError: raise if the tools has not been found
+    :return: tool found by its name
+    :rtype: Tool
+    """
 
     tool_name = tool_name.split("(")[0] if "(" in tool_name else tool_name
     tool = next(
@@ -33,7 +43,18 @@ def find_tool_by_name(
 
 
 class RobustReActOutputParser(ReActSingleInputOutputParser):
-    def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
+    def parse(
+        self: Self,
+        text: str,
+    ) -> Union[AgentAction, AgentFinish]:
+        """
+        Parse the output of the LLM call.
+
+        :param text: output of the LLM call
+        :type text: str
+        :return: either and AgentAction or an AgentFinish
+        :rtype: Union[AgentAction, AgentFinish]
+        """
         if "Final Answer:" in text:
             return AgentFinish(
                 return_values={"output": text.split("Final Answer:")[-1].strip()},
@@ -48,13 +69,34 @@ class RobustReActOutputParser(ReActSingleInputOutputParser):
                 tool=action_match, tool_input=action_input_match, log=text
             )
 
+
 class BasicToolNode:
     """A node that runs the tools requested in the last AIMessage."""
 
-    def __init__(self, tools: list) -> None:
+    def __init__(
+        self: Self,
+        tools: list[Tool],
+    ) -> None:
+        """
+        Initialize the node.
+
+        :param tools: list of available tools
+        :type tools: list
+        """
         self.tools_by_name = {tool.name: tool for tool in tools}
 
-    def __call__(self, inputs: dict):
+    def __call__(
+        self: Self,
+        inputs: dict,
+    ) -> dict:
+        """
+        Run the tools requested in the last AIMessage.
+
+        :param inputs: inputs to the node
+        :type inputs: dict
+        :return: outputs of the node
+        :rtype: dict
+        """
         if messages := inputs.get("messages", []):
             message = messages[-1]
         else:
@@ -72,7 +114,8 @@ class BasicToolNode:
                 )
             )
         return {"messages": outputs}
-    
+
+
 class State(TypedDict):
     # Messages have the type "list". The `add_messages` function
     # in the annotation defines how this state key should be updated
@@ -82,10 +125,15 @@ class State(TypedDict):
 
 def route_tools(
     state: State,
-):
+) -> str:
     """
     Use in the conditional_edge to route to the ToolNode if the last message
-    has tool calls. Otherwise, route to the end.
+    has tool calls. Otherwise, route to the end.ù
+
+    :param state: state of the graph
+    :type state: State
+    :return: the name of the next node to route to
+    :rtype: str
     """
     if isinstance(state, list):
         ai_message = state[-1]
@@ -97,7 +145,19 @@ def route_tools(
         return "tools"
     return END
 
-def chatbot(state: State, llm) -> dict:
+
+def chatbot(
+    state: State,
+    llm: BaseChatModel,
+) -> dict:
+    """
+    Chatbot function.
+
+    :param state: state of the graph
+    :type state: State
+    :param llm: language model
+    :type llm: BaseChatModel
+    """
     system_prompt = """
     You are an AI assistant.
     Answer the following questions as best you can.
