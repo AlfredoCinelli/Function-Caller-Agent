@@ -40,13 +40,14 @@ make app
 
 ```
 repo/
-├── app.py # Streamlit application entry src
-├── utils/
-│   ├── callbacks.py # Module for callbacks
-│   ├── logging.py   # Module for logging
-│   └── misc.py # Module with helper functions
-│   ├── tools.py   # Module with tools
-├── backend.py # Main module with the agent
+├── app.py               # Streamlit application entry src
+├── src/
+│   ├── backend.py       # Main module with the agent
+│   ├── utils/           # Main package with utils modules
+│   │   ├── callbacks.py # Module for callbacks
+│   │   ├── logging.py   # Module for logging
+│   │   ├── tools.py     # Module defining tools
+│   │   └── misc.py # Module with helper functions
 ├── chatbot.py # First version of the chatbot
 ```
 
