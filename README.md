@@ -1,10 +1,11 @@
-# 🔍🤖 WebExplorer Agent
+# 🔍🤖 Function Caller Agent
 
 An intelligent agent that searches and synthesizes information from the web using Tavily Search API, Google Serper and Wikipedia, presented through a sleek Streamlit interface.
+The core of the Agent is of being a function caller agent, therefore based on the given input query it routes either towards Wikipedia for general knowledge or to Tavily/Serper for real time information.
 
-![Python Version](https://img.shields.io/badge/python-3.12-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)
+The graph is the following:
+
+![Agent Graph](assets/graph.png)
 
 ## ✨ Features
 
@@ -20,7 +21,7 @@ An intelligent agent that searches and synthesizes information from the web usin
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/AlfredoCinelli/ReAct-Agent
+git clone https://github.com/AlfredoCinelli/Function-Caller-Agent
 cd repo_name
 ```
 
@@ -88,7 +89,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 - 📧 Email: alfredocinelli@gmail.com
-- 🐛 Issues: [GitHub Issues](https://github.com/AlfredoCinelli/ReAct-Agent/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/AlfredoCinelli/Function-Caller-Agent/issues)
 
 ---
+![Python Version](https://img.shields.io/badge/python-3.12-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Dependencies](https://img.shields.io/badge/dependencies-up%20to%20date-brightgreen)
+
 Made with ❤️ by [Alfredo Cinelli](https://github.com/alfredocinelli)
