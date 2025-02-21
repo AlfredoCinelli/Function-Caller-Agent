@@ -1,2 +1,2 @@
 
-"""Package containing utilities for ReAct agents implementation."""
+"""Package containing utilities for function caller Agents implementation."""

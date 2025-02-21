@@ -17,16 +17,16 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 if "graph" not in st.session_state:
-
-    st.session_state.graph = Graph(model_name="qwen2.5").compile_graph()
+    st.session_state.graph = Graph(model_name="mistral-nemo").compile_graph()
 
 # Display chat title
-st.title("🤖 AI Assistant")
+st.title("🤖 Function Calling Agent")
 st.markdown("---")
 
 # Display chat history
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
+    avatar = "🧑‍💻" if message["role"] == "user" else "🤖"
+    with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
 # Chat input
