@@ -51,13 +51,14 @@ TOOLS = [
 
 
 class LLM:
-    """Class representing the LLM enginge."""
+    """Class representing the LLM engine."""
 
     def __init__(
         self: Self,
         model_name: str,
     ) -> None:
-        """Constructor of the LLM model class.
+        """
+        Constructor of the LLM model class.
 
         :param model_name: name of the model
         :type model_name: str
@@ -66,13 +67,12 @@ class LLM:
         self.model_name = model_name
         self.llm = self.get_model(model_name=self.model_name)
 
-    st.cache_resource(show_spinner=False)
-
     @staticmethod
     def get_model(
         model_name: str,
     ) -> ChatOllama:
-        """Get the LLM model (from Ollama).
+        """
+        Get the LLM model (from Ollama).
 
         :param model_name: name of the model
         :type model_name: str
@@ -94,7 +94,8 @@ class Graph:
         model_name: str,
         tools: list[dict[str, Union[str, callable]]] = TOOLS,
     ) -> None:
-        """Constructor of the Graph class.
+        """
+        Constructor of the Graph class.
 
         :param model_name: name of the model
         :type model_name: str
